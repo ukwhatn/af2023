@@ -1,5 +1,0 @@
-sqlalchemy
-PyMySQL
-marshmallow
-alembic
-python-dotenv

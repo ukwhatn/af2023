@@ -5,10 +5,6 @@ from fastapi.staticfiles import StaticFiles
 
 from routers import root
 
-# for db import
-# import sys
-# sys.path.append("/user_modules")
-
 # logger config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
