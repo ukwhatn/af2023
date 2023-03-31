@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfiles/frontend/Dockerfile
+    volumes:
+      - ./frontend:/src
+      - node_modules:/src/app/node_modules
+    command: sh -c "yarn install && yarn ${BUILD_CMD:-dev}"
+    ports:
+      - "127.0.0.1:60998:5173"
+    env_file:
+      - ./envs/sentry.env
+    stdin_open: true
+    restart: always
+
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfiles/backend/Dockerfile
+    volumes:
+      - ./backend:/app
+      - ./db:/user_modules/db
+    ports:
+      - 60999:8080
+    env_file:
+      - ./envs/db.env
+      - ./envs/sentry.env
+    networks:
+      - cache_network
+    restart: always
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7.0
+    expose:
+      - 6379
+    volumes:
+      - ./redis/data:/data
+      - ./redis/conf/redis.conf:/etc/redis.conf
+    networks:
+      - cache_network
+    restart: always
+
+  bot:
+    build:
+      context: .
+      dockerfile: dockerfiles/bot/Dockerfile
+    volumes:
+      - ./bot:/app
+      - ./db:/user_modules/db
+    env_file:
+      - ./envs/db.env
+      - ./envs/discord.env
+      - ./envs/sentry.env
+    restart: on-failure
+
+networks:
+  cache_network:
+    driver: bridge
+
+volumes:
+  node_modules:
